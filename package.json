@@ -1,0 +1,33 @@
+{
+  "name": "youtube2s3",
+  "version": "1.0.0",
+  "description": "Video uploading from YouTube to AWS S3",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tikamchand06/youtube2s3.git"
+  },
+  "keywords": [
+    "youtube2s3",
+    "youtubetos3",
+    "s3",
+    "uploads",
+    "youtube"
+  ],
+  "author": "TIKAM CHAND MEGHWANSHI",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tikamchand06/youtube2s3/issues"
+  },
+  "homepage": "https://github.com/tikamchand06/youtube2s3#readme",
+  "dependencies": {
+    "aws-sdk": "^2.1098.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "ytdl-core": "^4.11.0"
+  }
+}
