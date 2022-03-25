@@ -8,6 +8,26 @@ const ytdl = require("ytdl-core");
 const app = express();
 const PORT = process.env.PORT || 8888;
 
+const uploadToS3 = (url, id) => {
+  return new Promise((resolve, reject) => {
+    const videoStream = new stream.PassThrough();
+    ytdl(url, { quality: "lowestaudio" }).pipe(videoStream);
+
+    const s3Object = new AWS.S3();
+    const upload = s3Object.upload({
+      Body: videoStream,
+      partSize: 1024 * 1024 * 64,
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: `videos/${id}_${new Date().getTime()}.mp4`,
+    });
+
+    upload.send((err) => {
+      if (err) reject(err);
+      else resolve("success");
+    });
+  });
+};
+
 // Add headers
 app.options("*", cors());
 app.use(cors({ optionsSuccessStatus: 200 }));
@@ -15,32 +35,18 @@ app.use(express.json({ extended: false, limit: "50mb", parameterLimit: 50000 }))
 
 app.get("/", (req, res) => res.send("API Operational"));
 
-app.get("/api/youtube2s3", (req, res) => {
-  const { id, url } = req.query;
+app.post("/api/youtube2s3", async (req, res) => {
+  const { id, url } = req.body;
   if (!url || !id) return res.send("Please add the 'url' & 'id' parameters.");
 
-  console.log(url, "started at", new Date());
+  const response = { params: { id, url }, time: { starts: new Date(), ends: null }, result: "", message: "" };
 
-  const videoStream = new stream.PassThrough();
-  ytdl(url, { quality: "lowestaudio" }).pipe(videoStream);
-
-  const s3Object = new AWS.S3();
-  const upload = s3Object.upload({
-    Body: videoStream,
-    partSize: 1024 * 1024 * 64,
-    Bucket: process.env.AWS_S3_BUCKET,
-    Key: `videos/${id}_${new Date().getTime()}.mp4`,
-  });
-
-  upload.send((err) => {
-    if (err) {
-      console.log(url, "has an error", err);
-    } else {
-      console.log(url, "Uploaded successfully at", new Date());
-    }
-  });
-
-  res.send("youtube2s3 Operational");
+  try {
+    const result = await uploadToS3(url, id);
+    res.status(200).json({ ...response, result, time: { ...response.time, ends: new Date() } });
+  } catch (error) {
+    res.status(500).json({ ...response, result: "failed", time: { ...response.time, ends: new Date() }, error });
+  }
 });
 
 app.listen(PORT, () => console.log(`Server listening at PORT: ${PORT}`));
