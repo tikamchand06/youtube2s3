@@ -49,6 +49,19 @@ app.post("/api/youtube2s3", async (req, res) => {
   }
 });
 
+app.post("/api/getYTInfo", async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.send("Please enter the valid URL.");
+
+  try {
+    const id = ytdl.getURLVideoID(url);
+    const result = await ytdl.getInfo(id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ msg: "An error occurred. Please try again later.", error });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server listening at PORT: ${PORT}`));
 
 module.exports = app;
