@@ -22,6 +22,8 @@ const uploadToS3 = (url, id) => {
     });
 
     upload.send((err) => {
+      console.log("uplaad error if any", err);
+
       if (err) reject(err);
       else resolve("success");
     });
@@ -42,9 +44,12 @@ app.post("/api/youtube2s3", async (req, res) => {
   const response = { params: { id, url }, time: { starts: new Date(), ends: null }, result: "", message: "" };
 
   try {
+    console.log("video upload start...", id, url, new Date());
     const result = await uploadToS3(url, id);
+    console.log("video upload ends...", result, new Date());
     res.status(200).json({ ...response, result, time: { ...response.time, ends: new Date() } });
   } catch (error) {
+    console.error("Error...", new Date(), error);
     res.status(500).json({ ...response, result: "failed", time: { ...response.time, ends: new Date() }, error });
   }
 });
@@ -55,6 +60,7 @@ app.post("/api/getYTInfo", async (req, res) => {
 
   try {
     const id = ytdl.getURLVideoID(url);
+    console.log("video fetched...", id, url, new Date());
     const result = await ytdl.getInfo(id);
     res.status(200).json(result);
   } catch (error) {
